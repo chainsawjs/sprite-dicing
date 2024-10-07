@@ -126,11 +126,6 @@ fn eval_atlas_size(ctx: &Context) -> USize {
     let units_count = ctx.units.len() as u32;
     let size = (units_count as f32).sqrt().ceil() as u32;
 
-    if ctx.pot {
-        let size = (size * ctx.padded_unit_size).next_power_of_two();
-        return USize::new(size, size);
-    }
-
     if ctx.square {
         let size = size * ctx.padded_unit_size;
         return USize::new(size, size);
@@ -145,6 +140,13 @@ fn eval_atlas_size(ctx: &Context) -> USize {
         if width * height < size.width * size.height {
             size = USize::new(width, height);
         }
+    }
+
+    if ctx.pot {
+        return USize::new(
+            (size.width * ctx.padded_unit_size).next_power_of_two(), 
+            (size.height * ctx.padded_unit_size).next_power_of_two()
+        );
     }
 
     USize::new(
