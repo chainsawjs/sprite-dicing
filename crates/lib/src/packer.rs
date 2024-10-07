@@ -126,6 +126,10 @@ fn eval_atlas_size(ctx: &Context) -> USize {
     let units_count = ctx.units.len() as u32;
     let size = (units_count as f32).sqrt().ceil() as u32;
 
+    if ctx.pot {        
+        return eval_atlas_size_pot(ctx);
+    }
+
     if ctx.square {
         let size = size * ctx.padded_unit_size;
         return USize::new(size, size);
@@ -142,17 +146,35 @@ fn eval_atlas_size(ctx: &Context) -> USize {
         }
     }
 
-    if ctx.pot {
-        return USize::new(
-            (size.width * ctx.padded_unit_size).next_power_of_two(), 
-            (size.height * ctx.padded_unit_size).next_power_of_two()
-        );
-    }
-
     USize::new(
         size.width * ctx.padded_unit_size,
         size.height * ctx.padded_unit_size,
     )
+}
+
+fn eval_atlas_size_pot(ctx: &Context) -> USize {
+    let units_count = ctx.units.len() as u32;
+    let total_size_required = units_count * ctx.padded_unit_size * ctx.padded_unit_size;
+
+    let mut sizes = Vec::new();
+    let mut size = 1;
+    while size < ctx.size_limit {
+        size = (size + 1).next_power_of_two();
+        sizes.push(size);
+    }
+
+    let mut previous_size = sizes[0];
+    for &size in &sizes {
+        if size * size >= total_size_required {
+            if (size * previous_size) >= total_size_required {
+                return USize::new(size, previous_size);
+            }
+            return USize::new(size, size);
+        }
+        previous_size = size;
+    }
+
+    panic!("Unable to find suitable POT atlas size");
 }
 
 fn bake_atlas(ctx: &Context, size: &USize) -> (Texture, HashMap<u64, FRect>) {
