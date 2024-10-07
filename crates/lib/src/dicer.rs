@@ -53,7 +53,7 @@ fn dice_it(ctx: &Context) -> Option<DicedTexture> {
     }
 
     if units.is_empty() {
-        return None;
+        units.push(empty_dice(ctx));
     }
 
     Some(DicedTexture {
@@ -63,6 +63,14 @@ fn dice_it(ctx: &Context) -> Option<DicedTexture> {
         pivot: ctx.sprite.pivot.to_owned(),
         units,
     })
+}
+
+fn empty_dice(ctx: &Context) -> DicedUnit {
+    let size = ctx.size + ctx.pad * 2;
+    let rect = URect::new(0, 0, size, size);
+    let pixels = vec![Pixel::default(); (size * size) as usize];
+    let hash = hash(&pixels);
+    DicedUnit { rect, pixels, hash }
 }
 
 fn dice_at(unit_x: u32, unit_y: u32, ctx: &Context) -> Option<DicedUnit> {
