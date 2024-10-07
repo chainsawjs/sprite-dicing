@@ -155,6 +155,7 @@ fn eval_atlas_size(ctx: &Context) -> USize {
 fn eval_atlas_size_pot(ctx: &Context) -> USize {
     let units_count = ctx.units.len() as u32;
     let total_size_required = units_count * ctx.padded_unit_size * ctx.padded_unit_size;
+    let min_size = (total_size_required as f32).sqrt().ceil() as u32;
 
     let mut sizes = Vec::new();
     let mut size = 1;
@@ -165,8 +166,8 @@ fn eval_atlas_size_pot(ctx: &Context) -> USize {
 
     let mut previous_size = sizes[0];
     for &size in &sizes {
-        if size * size >= total_size_required {
-            if (size * previous_size) >= total_size_required {
+        if size > min_size {
+            if (size * previous_size) > total_size_required {
                 return USize::new(size, previous_size);
             }
             return USize::new(size, size);
