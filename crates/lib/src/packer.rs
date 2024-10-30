@@ -147,9 +147,13 @@ fn eval_atlas_size(ctx: &Context) -> USize {
     }
 
     USize::new(
-        size.width * ctx.padded_unit_size,
-        size.height * ctx.padded_unit_size,
+        round_up_to_next_multiple_of_4(size.width * ctx.padded_unit_size),
+        round_up_to_next_multiple_of_4(size.height * ctx.padded_unit_size),
     )
+}
+
+fn round_up_to_next_multiple_of_4(x: u32) -> u32 {
+    (x + 3) & !3
 }
 
 fn eval_atlas_size_pot(ctx: &Context) -> USize {
